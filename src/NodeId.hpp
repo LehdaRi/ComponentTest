@@ -13,6 +13,7 @@ public:
     friend class Scene;
     friend class Node;
 
+    NodeId(void);
     NodeId(const std::shared_ptr<Node*>& node);
 
     //NodeId(const NodeId&)               = delete;
@@ -20,6 +21,7 @@ public:
     //NodeId& operator=(const NodeId&)    = delete;
     //NodeId& operator=(NodeId&&)         = delete;
 
+    Node* operator*(void) const;
     Node* operator->(void) const;
 
     Node* ptr(void);

@@ -22,7 +22,8 @@ public:
 
 private:
     std::vector<Node> nodes_;
-    void updateNodes(void);
+    static unsigned nodeId__; //temp?
+    void updateNodes(std::vector<Node>::iterator start);
 
     template <typename T_Component>
     std::vector<T_Component>& accessComponents(void);
