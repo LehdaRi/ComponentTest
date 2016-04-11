@@ -60,7 +60,7 @@ void SceneTester::addChildren(NodeId& node, unsigned min, unsigned max) {
         auto newMax = newMin + r_()%15;
         addRandomComponents(newNode, newMin, newMax);
 
-        if (scene_.getNodesNumber() >= nNodes_) {
+        if (scene_.getNodesNumber() >= nNodesMax_) {
             adding_ = false;
             break;
         }
