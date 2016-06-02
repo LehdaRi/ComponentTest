@@ -1,35 +1,51 @@
 #include "Node.hpp"
 
 
-Node::Node(unsigned id, const NodeId& parent) :
-    id_(id),
-    ptr_(std::make_shared<Node*>(this)),
-    parent_(parent), size_(0)
-{}
+unsigned Node::id__ = 0u;
 
 void Node::addChild(const NodeId& nodeId) {
-    children_.emplace_back(nodeId.ptr());
+    //children_.push_back(nodeId);
     increaseSize();
 }
 
-NodeId Node::getId(void) {
-    return NodeId(ptr_);
+NodeId Node::getId(void) const {
+    return NodeId(it_);
 }
 
 unsigned Node::getSize(void) const {
     return size_;
 }
-
+/*
 unsigned Node::getChildrenNumber(void) const {
     return children_.size();
 }
-
-void Node::updatePtr(void) {
-    *ptr_ = this;
+*/
+std::vector<Node>::iterator Node::getIterToNext(void) const {
+    return *it_+size_+1;
 }
+
+void Node::print(std::vector<Node>::iterator& it, unsigned level) {
+    for (auto i=0u; i<level; ++i)
+        printf("  ");
+
+    if (parent_)
+        printf("%u %u\n", id_, parent_->id_);
+    else
+        printf("%u\n", id_);
+    it++;
+
+    while (it < getIterToNext())
+        it->print(it, level+1);
+}
+
+Node::Node(const NodeId& parent) :
+    id_(id__++), it_(nullptr),
+    parent_(parent), size_(0)
+{}
+
 
 void Node::increaseSize(void) {
     ++size_;
-    if (*parent_)
+    if ((bool)parent_)
         parent_->increaseSize();
 }

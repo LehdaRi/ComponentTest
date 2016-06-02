@@ -3,71 +3,73 @@
 
 #include <chrono>
 #include <iostream>
+#include <deque>
 
 
-unsigned Scene::nodeId__ = 0;
+Scene& Scene::getInstance(void) {
+    static Scene instance;
+    return instance;
+}
 
-
-Scene::Scene(unsigned nReservedNodes) {
+void Scene::reserveNodes(unsigned nReservedNodes) {
     nodes_.reserve(nReservedNodes);
 }
 
 NodeId Scene::addNode(void) {
     auto c1 = nodes_.capacity();
-    //printf("adding new node: %u\n", nodeId__);
-    nodes_.emplace_back(nodeId__++);
+    nodes_.push_back(std::move(Node()));
+    auto& newNode = nodes_.back();
+    //  give node the iterator to itself
+    newNode.it_ = std::make_shared<std::vector<Node>::iterator>(nodes_.end()-1);
     auto c2 = nodes_.capacity();
 
-    //  if vector has got reallocated, update node pointers
+    //  if vector has got reallocated, update node iterators
     if (c2 > c1)
         updateNodes(nodes_.begin());
 
-    NodeId nodeId = nodes_.back().getId();
-
-    return nodeId;
+    return newNode.getId();
 }
 
 NodeId Scene::addNode(const NodeId& parent) {
-    int offset = (parent.ptr()-&nodes_.front())+parent->getSize()+1;
-    NodeId nodeId;
+    auto c1 = nodes_.capacity();
 
-    if (offset-nodes_.size() == 0) {
-        auto c1 = nodes_.capacity();
-        nodes_.emplace_back(nodeId__++, parent);
-        auto c2 = nodes_.capacity();
+    //  add new node before the next node of same level than parent
+    auto newNodeIt = nodes_.insert(parent->getIterToNext(), std::move(Node(parent)));
+    //  give node the iterator to itself
+    newNodeIt->it_ = std::make_shared<std::vector<Node>::iterator>(newNodeIt);
 
-        if (c2 > c1)
-            updateNodes(nodes_.begin());
+    auto c2 = nodes_.capacity();
 
-        nodeId = nodes_.back().getId();
-    }
-    else {
-        auto c1 = nodes_.capacity();
-        auto iter = nodes_.insert(nodes_.begin()+offset, Node(nodeId__++, parent));
-        auto c2 = nodes_.capacity();
+    //  if vector has got reallocated, update all node iterators
+    if (c2 > c1)
+        updateNodes(nodes_.begin());
+    else    //  all following nodes need updating nevertheless
+        updateNodes(newNodeIt+1);
 
-        if (c2 > c1)
-            updateNodes(nodes_.begin());
-        else
-            updateNodes(iter);
+    //  add child to parent, has to be done after iterator update
+    auto newNodeId = newNodeIt->getId();
+    parent->addChild(newNodeId);
 
-        nodeId = iter->getId();
-    }
-
-    parent->addChild(nodeId);
-
-    return nodeId;
+    return newNodeId;
 }
 
 unsigned Scene::getNodesNumber(void) const {
     return nodes_.size();
 }
 
-void Scene::updateNodes(std::vector<Node>::iterator start) {
+void Scene::printNodes(void) {
+    for (auto it = nodes_.begin(); it < nodes_.end();) {
+        it->print(it, 0);
+    }
+}
+void Scene::updateNodes(std::vector<Node>::iterator it) {
     //auto start = std::chrono::steady_clock::now();
 
-    for (; start != nodes_.end(); ++start)
-        start->updatePtr();
+    for (; it != nodes_.end(); ++it) {
+        //auto ptr = std::make_shared<std::vector<Node>::iterator>(it);
+        //printf("%p\n", &**ptr);
+        *(it->it_) = it;
+    }
 
     //auto end = std::chrono::steady_clock::now();
     //auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end-start);

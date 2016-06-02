@@ -1,16 +1,16 @@
 #include "SceneTester.hpp"
 #include "Clock.hpp"
 
-
+/*
 SceneTester::SceneTester(unsigned seed, unsigned nNodes, unsigned nLevels) :
-    scene_(nNodes),
     r_(seed), nNodesMax_(nNodes), nNodes_(0), nLevels_(nLevels),
     adding_(true), level_(0)
 {
+    SCENE.reserveNodes(nNodes);
     Clock clock;
     clock.begin();
     while (adding_) {
-        auto newNode = scene_.addNode();
+        auto newNode = SCENE.addNode();
         ++nNodes_;
         nNodesPerLevel_[0]++;
 
@@ -34,16 +34,12 @@ void SceneTester::test(void) {
 
     Clock clock;
     clock.begin();
-    scene_(visitor1);
+    SCENE(visitor1);
     clock.end("TestComponent A Visitor: ", Clock::MICROSECONDS);
 
     clock.begin();
-    scene_(visitor2);
+    SCENE(visitor2);
     clock.end("TestComponent B Visitor: ", Clock::MICROSECONDS);
-}
-
-const Scene& SceneTester::getScene(void) const {
-    return scene_;
 }
 
 void SceneTester::addChildren(NodeId& node, unsigned min, unsigned max) {
@@ -52,7 +48,7 @@ void SceneTester::addChildren(NodeId& node, unsigned min, unsigned max) {
 
     auto n = min + r_()%(max-min+1);
     for (auto i=0u; i<n && adding_; ++i) {
-        auto newNode = scene_.addNode(node);
+        auto newNode = SCENE.addNode(node);
         ++nNodes_;
         nNodesPerLevel_[level_]++;
 
@@ -60,7 +56,7 @@ void SceneTester::addChildren(NodeId& node, unsigned min, unsigned max) {
         auto newMax = newMin + r_()%15;
         addRandomComponents(newNode, newMin, newMax);
 
-        if (scene_.getNodesNumber() >= nNodesMax_) {
+        if (SCENE.getNodesNumber() >= nNodesMax_) {
             adding_ = false;
             break;
         }
@@ -84,8 +80,9 @@ void SceneTester::addRandomComponents(NodeId& node, unsigned min, unsigned max) 
     //printf("adding %u random components\n", nComponents);
     for (auto i=0u; i<nComponents; ++i) {
         if (r_()%2)
-            scene_.template addComponent<TCA>(node, -100+r_()%200, -100+r_()%200);
+            SCENE.template addComponent<TCA>(node, -100+r_()%200, -100+r_()%200);
         else
-            scene_.template addComponent<TCB>(node, (-1000+r_()%2000)*0.1f, (-10000+r_()%20000)*0.01);
+            SCENE.template addComponent<TCB>(node, (-1000+r_()%2000)*0.1f, (-10000+r_()%20000)*0.01);
     }
 }
+*/

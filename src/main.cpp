@@ -1,12 +1,34 @@
 #include <iostream>
 #include <chrono>
+#include <random>
 
-#include "SceneTester.hpp"
+#include "Scene.hpp"
 
+
+void addNodes(std::default_random_engine& r, const NodeId& parent, int min, int max) {
+    int n = min + r()%(max-min+1);
+
+    for (auto i=0u; i<n; ++i) {
+        auto id = SCENE.addNode(parent);
+        addNodes(r, id, min-1<=0 ? 0 : min-1, max-1);
+    }
+}
+
+void buildRandomScene() {
+    std::default_random_engine r(715517);
+    for (auto i=0u; i<4u; ++i) {
+        auto id = SCENE.addNode();
+        addNodes(r, id, 2, 5);
+    }
+}
 
 int main(void) {
-    SceneTester st(715517, 100000, 50);
-    st.test();
+    //SceneTester st(715517, 100000, 50);
+
+    //st.test();
+
+    buildRandomScene();
+    SCENE.printNodes();
 
     /*TVA visitor;
 
