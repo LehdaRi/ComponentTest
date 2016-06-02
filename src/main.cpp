@@ -5,20 +5,22 @@
 #include "Scene.hpp"
 
 
-void addNodes(std::default_random_engine& r, const NodeId& parent, int min, int max) {
+void addNodes(std::default_random_engine& r, std::vector<NodeId>& nodes,
+              const NodeId& parent, int min, int max) {
     int n = min + r()%(max-min+1);
 
-    for (auto i=0u; i<n; ++i) {
+    for (auto i=0; i<n; ++i) {
         auto id = SCENE.addNode(parent);
-        addNodes(r, id, min-1<=0 ? 0 : min-1, max-1);
+        nodes.push_back(id);
+        addNodes(r, nodes, id, min-1<=0 ? 0 : min-1, max-1);
     }
 }
 
-void buildRandomScene() {
-    std::default_random_engine r(715517);
+void buildRandomScene(std::default_random_engine& r, std::vector<NodeId>& nodes) {
     for (auto i=0u; i<4u; ++i) {
         auto id = SCENE.addNode();
-        addNodes(r, id, 2, 5);
+        nodes.push_back(id);
+        addNodes(r, nodes, id, 1, 3);
     }
 }
 
@@ -27,7 +29,18 @@ int main(void) {
 
     //st.test();
 
-    buildRandomScene();
+    std::default_random_engine r(715517);
+    std::vector<NodeId> nodes;
+    buildRandomScene(r, nodes);
+    SCENE.printNodes();
+
+    for (auto& node : nodes) {
+        if (r()%5 == 0) {
+            printf("deleting node %u\n", node->id_);
+            SCENE.deleteNode(node);
+        }
+    }
+
     SCENE.printNodes();
 
     /*TVA visitor;

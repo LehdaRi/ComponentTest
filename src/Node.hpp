@@ -43,6 +43,7 @@ private:
     NodeId parent_;
     unsigned size_; //number of subnodes
     void increaseSize(void);
+    void decreaseSize(unsigned n);
 
     //std::vector<NodeId> children_;
 

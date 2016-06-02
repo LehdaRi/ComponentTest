@@ -53,6 +53,12 @@ NodeId Scene::addNode(const NodeId& parent) {
     return newNodeId;
 }
 
+void Scene::deleteNode(const NodeId& nodeId) {
+    if (nodeId->parent_)
+        nodeId->parent_->decreaseSize(nodeId->getSize()+1);
+    updateNodes(nodes_.erase(nodeId.iter(), nodeId->getIterToNext()));
+}
+
 unsigned Scene::getNodesNumber(void) const {
     return nodes_.size();
 }

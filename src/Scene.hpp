@@ -22,6 +22,7 @@ public:
 
     NodeId addNode(void);
     NodeId addNode(const NodeId& parent);
+    void deleteNode(const NodeId& nodeId);
     unsigned getNodesNumber(void) const;
 
     void printNodes(void);

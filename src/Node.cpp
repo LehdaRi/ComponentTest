@@ -3,6 +3,7 @@
 
 unsigned Node::id__ = 0u;
 
+
 void Node::addChild(const NodeId& nodeId) {
     //children_.push_back(nodeId);
     increaseSize();
@@ -46,6 +47,12 @@ Node::Node(const NodeId& parent) :
 
 void Node::increaseSize(void) {
     ++size_;
-    if ((bool)parent_)
+    if (parent_)
         parent_->increaseSize();
+}
+
+void Node::decreaseSize(unsigned n) {
+    size_-=n;
+    if (parent_)
+        parent_->decreaseSize(n);
 }
