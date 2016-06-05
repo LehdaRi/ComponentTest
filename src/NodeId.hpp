@@ -11,11 +11,19 @@ class Node;
 
 class NodeId {
 public:
+    struct Iter {
+        std::vector<Node>::iterator it;
+        bool valid;
+
+        Iter(void) : valid(false) {}
+        Iter(const std::vector<Node>::iterator it) : it(it), valid(true) {}
+    };
+
     friend class Scene;
     friend class Node;
 
     NodeId(void);
-    NodeId(const std::shared_ptr<std::vector<Node>::iterator>& node);
+    NodeId(const std::shared_ptr<Iter>& node);
 
     Node* operator*(void) const;
     std::vector<Node>::iterator operator->(void) const;
@@ -28,8 +36,9 @@ public:
     Node* ptr(void);
     Node* ptr(void) const;
 
+    std::shared_ptr<Iter> node_;
 private:
-    std::shared_ptr<std::vector<Node>::iterator> node_;
+    //std::shared_ptr<std::vector<Node>::iterator> node_;
 };
 
 

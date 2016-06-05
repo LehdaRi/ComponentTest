@@ -4,6 +4,11 @@
 unsigned Node::id__ = 0u;
 
 
+Node::~Node(void) {
+    printf("%p reset\n", it_.get());
+    *it_ = NodeId::Iter();
+}
+
 void Node::addChild(const NodeId& nodeId) {
     //children_.push_back(nodeId);
     increaseSize();
@@ -22,7 +27,7 @@ unsigned Node::getChildrenNumber(void) const {
 }
 */
 std::vector<Node>::iterator Node::getIterToNext(void) const {
-    return *it_+size_+1;
+    return it_->it+size_+1;
 }
 
 void Node::print(std::vector<Node>::iterator& it, unsigned level) {

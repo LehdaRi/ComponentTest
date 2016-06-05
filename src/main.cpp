@@ -5,23 +5,45 @@
 #include "Scene.hpp"
 
 
-void addNodes(std::default_random_engine& r, std::vector<NodeId>& nodes,
+bool addNodes(std::default_random_engine& r, std::vector<NodeId>& nodes,
               const NodeId& parent, int min, int max) {
     int n = min + r()%(max-min+1);
 
     for (auto i=0; i<n; ++i) {
         auto id = SCENE.addNode(parent);
         nodes.push_back(id);
+        if (nodes.size() >= 10)
+            return false;
         addNodes(r, nodes, id, min-1<=0 ? 0 : min-1, max-1);
     }
+    return true;
 }
 
 void buildRandomScene(std::default_random_engine& r, std::vector<NodeId>& nodes) {
-    for (auto i=0u; i<4u; ++i) {
+    for (auto i=0u; i<1000u; ++i) {
         auto id = SCENE.addNode();
         nodes.push_back(id);
-        addNodes(r, nodes, id, 1, 3);
+        if (!addNodes(r, nodes, id, 1, 3))
+            break;
     }
+}
+
+void deleteRandomNodes(std::default_random_engine& r, std::vector<NodeId>& nodes) {
+    //while (true) {
+        for (auto it = nodes.begin(); it != nodes.end();) {
+            //if (r()%5 == 0) {
+                //if ((*it)->id_ == 100)
+                    //printf("DBG\n");
+                printf("deleting node %u\n", (*it)->id_);
+                //SCENE.deleteNode(*it);
+                it = nodes.erase(it);
+                //if (nodes.size() <= 50)
+                    //return;
+            //}
+            //else
+                //++it;
+        }
+    //}
 }
 
 int main(void) {
@@ -31,17 +53,31 @@ int main(void) {
 
     std::default_random_engine r(715517);
     std::vector<NodeId> nodes;
+
+    auto id = SCENE.addNode();
+    printf("%p %p\n", id.node_.get(), id->it_.get());
+    SCENE.deleteNode(id);
+    printf("%p %p\n", id.node_.get(), id->it_.get());
+    //printf("%u\n", id->id_);
+
     buildRandomScene(r, nodes);
-    SCENE.printNodes();
 
-    for (auto& node : nodes) {
-        if (r()%5 == 0) {
-            printf("deleting node %u\n", node->id_);
-            SCENE.deleteNode(node);
-        }
-    }
+    for (auto& node : nodes)
+        if (node)
+            printf("%u ", node->id_);
+    printf("\n\n");
 
     SCENE.printNodes();
+    SCENE.deleteNode(nodes[1]);
+
+    for (auto& node : nodes)
+        if (node)
+            printf("%u ", node->id_);
+    printf("\n\n");
+*/
+    //deleteRandomNodes(r, nodes);
+    //SCENE.printNodes();
+
 
     /*TVA visitor;
 

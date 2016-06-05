@@ -15,6 +15,8 @@ class Node {
 public:
     friend class Scene;
 
+    ~Node(void);
+
     NodeId getId(void) const;
     unsigned getSize(void) const;
     //unsigned getChildrenNumber(void) const;
@@ -30,6 +32,8 @@ public:
 
 
     unsigned id_;
+
+    std::shared_ptr<NodeId::Iter> it_;
 private:
     static unsigned id__; //TEMP
 
@@ -38,7 +42,7 @@ private:
     //  adding children happens through Scene, therefore addChild is a private function
     void addChild(const NodeId& nodeId);
 
-    std::shared_ptr<std::vector<Node>::iterator> it_;
+    //std::shared_ptr<std::vector<Node>::iterator> it_;
 
     NodeId parent_;
     unsigned size_; //number of subnodes
