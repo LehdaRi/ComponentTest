@@ -22,11 +22,12 @@ NodeId Scene::addNode(void) {
     nTotalNodes = -1;
     auto& nl = nodes_[0];
 
+    //  if no free invalidated nodes available, create a new one
     if (nl.firstFreeId == -1) {
         nl.nodes.emplace_back(nl.nodes.size());
         return nl.nodes.back().getId();
     }
-    else {
+    else {  //  else use first invalidated node
         Node& node = nl.nodes[nl.firstFreeId];
         node.valid_.reset(new bool(true));
         node.active_ = true;
@@ -37,6 +38,8 @@ NodeId Scene::addNode(void) {
 }
 
 NodeId Scene::addNode(const NodeId& parent) {
+    printf("Adding child node for node %u,%llu\n", parent.level_, parent.id_);
+
     nTotalNodes = -1;
     auto& nl = nodes_[parent.level_+1];
 
@@ -44,18 +47,21 @@ NodeId Scene::addNode(const NodeId& parent) {
         nl.nodes.emplace_back(nl.nodes.size(), parent.level_+1);
 
         auto newNodeId = nl.nodes.back().getId();
-
         (*parent).addChild(newNodeId);
 
         return newNodeId;
     }
     else {
+        printf("Node %u,%llu revalidated\n", parent.level_+1, nl.firstFreeId);
         Node& node = nl.nodes[nl.firstFreeId];
         node.valid_.reset(new bool(true));
         node.active_ = true;
 
+        auto newNodeId = node.getId();
+        (*parent).addChild(newNodeId);
+
         updateFirstFreeId(nl);
-        return node.getId();
+        return newNodeId;
     }
 }
 
@@ -66,7 +72,16 @@ void Scene::deleteNode(const NodeId& nodeId) {
 
     nTotalNodes = -1;
 
+    auto level = nodeId.level_;
+    auto id = nodeId.id_;
+
     (*nodeId).invalidate();
+
+    if (nodes_[level].firstFreeId == -1 || nodes_[level].firstFreeId > id) {
+        nodes_[level].firstFreeId = id;
+        printf("Level %u first free id: %llu\n", level, id);
+    }
+
 }
 
 uint64_t Scene::getNodesNumber(int32_t level) {
@@ -95,12 +110,16 @@ Scene::Scene(void) :
 {}
 
 void Scene::updateFirstFreeId(NodeLevel& nodeLevel) {
+    if (nodeLevel.firstFreeId == -1)
+        nodeLevel.firstFreeId = 0;
+
     for (auto i=nodeLevel.firstFreeId; i<(int64_t)nodeLevel.nodes.size(); ++i) {
         if (!*(nodeLevel.nodes[i].valid_)) {
             nodeLevel.firstFreeId = i;
             return;
         }
     }
+
     nodeLevel.firstFreeId = -1;
 }
 

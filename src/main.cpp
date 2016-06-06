@@ -12,7 +12,7 @@ bool addNodes(std::default_random_engine& r, std::vector<NodeId>& nodes,
     for (auto i=0; i<n; ++i) {
         auto id = SCENE.addNode(parent);
         nodes.push_back(id);
-        if (nodes.size() >= 30)
+        if (SCENE.getNodesNumber() >= 100)
             return false;
         addNodes(r, nodes, id, min-1<=0 ? 0 : min-1, max-1);
     }
@@ -34,7 +34,7 @@ void deleteRandomNodes(std::default_random_engine& r, std::vector<NodeId>& nodes
             if (r()%10 == 0) {
                 SCENE.deleteNode(*it);
                 it = nodes.erase(it);
-                if (SCENE.getNodesNumber() <= 20)
+                if (SCENE.getNodesNumber() <= 50)
                     return;
             }
             else
@@ -53,13 +53,19 @@ int main(void) {
     SCENE.deleteNode(id1);*/
 
 
-    for (auto i=0u; i<1; ++i) {
+    for (auto i=0u; i<100; ++i) {
         buildRandomScene(r, nodes);
-        SCENE.printNodes();
+        //SCENE.printNodes();
+        //printf("Number of nodes: %llu\n", SCENE.getNodesNumber());
         deleteRandomNodes(r, nodes);
     }
 
     SCENE.printNodes();
+    printf("Number of nodes: %llu\n", SCENE.getNodesNumber());
+
+    buildRandomScene(r, nodes);
+    SCENE.printNodes();
+    printf("Number of nodes: %llu\n", SCENE.getNodesNumber());
 
 
     /*TVA visitor;

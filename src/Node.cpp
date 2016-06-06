@@ -1,4 +1,5 @@
 #include "Node.hpp"
+#include "Scene.hpp"
 
 
 Node::Node(uint64_t id, uint32_t level, const NodeId& parent) :
@@ -8,7 +9,7 @@ Node::Node(uint64_t id, uint32_t level, const NodeId& parent) :
     active_(true),
     parent_(parent)
 {
-     printf("Node l%u,%llu created\n", level_, id_);
+     printf("Node %u,%llu created\n", level_, id_);
 }
 
 bool Node::isValid(void) const {
@@ -35,7 +36,7 @@ void Node::print(void) {
     for (auto i=0u; i<level_; ++i)
         printf("  ");
 
-    printf("%llu %u\n", id_, level_);
+    printf("%u,%llu\n", level_, id_);
 
     for (auto& c : children_)
         if (c)
@@ -44,13 +45,14 @@ void Node::print(void) {
 
 
 void Node::invalidate(void) {
-    printf("Node l%u,%llu invalidated\n", level_, id_);
+    printf("Node %u,%llu invalidated\n", level_, id_);
     *valid_ = false;
     active_ = false;
 
     for (auto& c : children_)
-        if (c)
-            (*c).invalidate();
+        SCENE.deleteNode(c);
+
+    children_.clear();
 }
 
 void Node::addChild(const NodeId& nodeId) {

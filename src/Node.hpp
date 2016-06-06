@@ -45,7 +45,7 @@ private:
 
     std::vector<NodeId> children_;
 
-    //  invalidation frees the node id and invalidates children
+    //  invalidation frees the node id and invalidates & deletes children
     void invalidate(void);
 
     //  adding children happens through Scene, therefore addChild is a private function
