@@ -4,11 +4,6 @@
 unsigned Node::id__ = 0u;
 
 
-Node::~Node(void) {
-    printf("%p reset\n", it_.get());
-    *it_ = NodeId::Iter();
-}
-
 void Node::addChild(const NodeId& nodeId) {
     //children_.push_back(nodeId);
     increaseSize();

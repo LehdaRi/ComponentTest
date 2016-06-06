@@ -22,7 +22,7 @@ std::vector<Node>::iterator NodeId::operator->(void) const {
 
 NodeId::operator bool() const {
     //printf("%p ",node_.get());
-    return node_->valid;
+    return node_ && node_->valid;
 }
 
 std::vector<Node>::iterator NodeId::iter(void) {

@@ -15,8 +15,6 @@ class Node {
 public:
     friend class Scene;
 
-    ~Node(void);
-
     NodeId getId(void) const;
     unsigned getSize(void) const;
     //unsigned getChildrenNumber(void) const;

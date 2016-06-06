@@ -65,10 +65,10 @@ void Scene::deleteNode(const NodeId& nodeId) {
 
     auto firstIt = nodeId.iter();
     auto lastIt = nodeId->getIterToNext();
-    /*
+
     for (auto it = firstIt; it != lastIt; ++it)
-        it->it_.reset();
-    */
+        *(it->it_) = NodeId::Iter();
+
     updateNodes(nodes_.erase(firstIt, lastIt));
 }
 
@@ -84,8 +84,6 @@ void Scene::printNodes(void) {
 void Scene::updateNodes(std::vector<Node>::iterator it) {
     //auto start = std::chrono::steady_clock::now();
 
-    if (it != nodes_.end())
-        printf("updating beginning from node %u\n", it->id_);
     for (; it != nodes_.end(); ++it)
         *(it->it_) = it;
 
