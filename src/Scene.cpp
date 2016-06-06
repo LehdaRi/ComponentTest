@@ -6,51 +6,57 @@
 #include <deque>
 
 
+std::unordered_map<uint32_t, Scene::NodeLevel> Scene::nodes_;
+
+
 Scene& Scene::getInstance(void) {
     static Scene instance;
     return instance;
 }
-
+/*
 void Scene::reserveNodes(unsigned nReservedNodes) {
     nodes_.reserve(nReservedNodes);
 }
-
+*/
 NodeId Scene::addNode(void) {
-    auto c1 = nodes_.capacity();
-    nodes_.push_back(std::move(Node()));
-    auto& newNode = nodes_.back();
-    //  give node the iterator to itself
-    newNode.it_ = std::make_shared<NodeId::Iter>(nodes_.end()-1);
-    auto c2 = nodes_.capacity();
+    nTotalNodes = -1;
+    auto& nl = nodes_[0];
 
-    //  if vector has got reallocated, update node iterators
-    if (c2 > c1)
-        updateNodes(nodes_.begin());
+    if (nl.firstFreeId == -1) {
+        nl.nodes.emplace_back(nl.nodes.size());
+        return nl.nodes.back().getId();
+    }
+    else {
+        Node& node = nl.nodes[nl.firstFreeId];
+        node.valid_.reset(new bool(true));
+        node.active_ = true;
 
-    return newNode.getId();
+        updateFirstFreeId(nl);
+        return node.getId();
+    }
 }
 
 NodeId Scene::addNode(const NodeId& parent) {
-    auto c1 = nodes_.capacity();
+    nTotalNodes = -1;
+    auto& nl = nodes_[parent.level_+1];
 
-    //  add new node before the next node of same level than parent
-    auto newNodeIt = nodes_.insert(parent->getIterToNext(), std::move(Node(parent)));
-    //  give node the iterator to itself
-    newNodeIt->it_ = std::make_shared<NodeId::Iter>(newNodeIt);
+    if (nl.firstFreeId == -1) {
+        nl.nodes.emplace_back(nl.nodes.size(), parent.level_+1);
 
-    auto c2 = nodes_.capacity();
+        auto newNodeId = nl.nodes.back().getId();
 
-    //  if vector has got reallocated, update all node iterators
-    if (c2 > c1)
-        updateNodes(nodes_.begin());
-    else    //  all following nodes need updating nevertheless
-        updateNodes(newNodeIt+1);
+        (*parent).addChild(newNodeId);
 
-    //  add child to parent, has to be done after iterator update
-    auto newNodeId = newNodeIt->getId();
-    parent->addChild(newNodeId);
+        return newNodeId;
+    }
+    else {
+        Node& node = nl.nodes[nl.firstFreeId];
+        node.valid_.reset(new bool(true));
+        node.active_ = true;
 
-    return newNodeId;
+        updateFirstFreeId(nl);
+        return node.getId();
+    }
 }
 
 void Scene::deleteNode(const NodeId& nodeId) {
@@ -58,29 +64,47 @@ void Scene::deleteNode(const NodeId& nodeId) {
     if (!nodeId)
         return;
 
-    //  nodes ancestors' sizes need to be decreased accordingly
-    if (nodeId->parent_)
-        nodeId->parent_->decreaseSize(nodeId->getSize()+1);
-    //  finally update iterators
+    nTotalNodes = -1;
 
-    auto firstIt = nodeId.iter();
-    auto lastIt = nodeId->getIterToNext();
-
-    for (auto it = firstIt; it != lastIt; ++it)
-        *(it->it_) = NodeId::Iter();
-
-    updateNodes(nodes_.erase(firstIt, lastIt));
+    (*nodeId).invalidate();
 }
 
-unsigned Scene::getNodesNumber(void) const {
-    return nodes_.size();
+uint64_t Scene::getNodesNumber(int32_t level) {
+    if (level == -1) {
+        if (nTotalNodes == -1) {
+            nTotalNodes = 0;
+            for (auto& nl : nodes_) {
+                for (auto& n : nl.second.nodes)
+                    if (n.isValid())
+                        nTotalNodes ++;
+            }
+        }
+        return nTotalNodes;
+    }
+    else
+        return nodes_[level].nodes.size();
 }
 
 void Scene::printNodes(void) {
-    for (auto it = nodes_.begin(); it < nodes_.end();) {
-        it->print(it, 0);
-    }
+    for (auto& node : nodes_[0].nodes)
+        node.print();
 }
+
+Scene::Scene(void) :
+    nTotalNodes(-1)
+{}
+
+void Scene::updateFirstFreeId(NodeLevel& nodeLevel) {
+    for (auto i=nodeLevel.firstFreeId; i<(int64_t)nodeLevel.nodes.size(); ++i) {
+        if (!*(nodeLevel.nodes[i].valid_)) {
+            nodeLevel.firstFreeId = i;
+            return;
+        }
+    }
+    nodeLevel.firstFreeId = -1;
+}
+
+/*
 void Scene::updateNodes(std::vector<Node>::iterator it) {
     //auto start = std::chrono::steady_clock::now();
 
@@ -91,3 +115,4 @@ void Scene::updateNodes(std::vector<Node>::iterator it) {
     //auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
     //std::cout << "node update: " << diff.count() << " microseconds" << std::endl;
 }
+*/

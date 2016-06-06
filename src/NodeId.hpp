@@ -2,8 +2,10 @@
 #define NODEID_HPP
 
 
-#include <memory>
+#include <cstdint>
+#include <unordered_map>
 #include <vector>
+#include <memory>
 
 
 class Node;
@@ -11,34 +13,24 @@ class Node;
 
 class NodeId {
 public:
-    struct Iter {
-        std::vector<Node>::iterator it;
-        bool valid;
-
-        Iter(void) : valid(false) {}
-        Iter(const std::vector<Node>::iterator it) : it(it), valid(true) {}
-    };
-
     friend class Scene;
-    friend class Node;
 
     NodeId(void);
-    NodeId(const std::shared_ptr<Iter>& node);
+    NodeId(uint64_t id, uint32_t level, const std::shared_ptr<bool>& valid);
 
-    Node* operator*(void) const;
-    std::vector<Node>::iterator operator->(void) const;
+    //Node* operator*(void) const;
+    //std::vector<Node>::iterator operator->(void) const;
 
+    Node& operator*(void) const;
     operator bool() const;
 
-    std::vector<Node>::iterator iter(void);
-    std::vector<Node>::iterator iter(void) const;
+    //Node* ptr(void);
+    //Node* ptr(void) const;
 
-    Node* ptr(void);
-    Node* ptr(void) const;
-
-    std::shared_ptr<Iter> node_;
 private:
-    //std::shared_ptr<std::vector<Node>::iterator> node_;
+    uint64_t id_;
+    uint32_t level_;
+    std::shared_ptr<bool> valid_;
 };
 
 

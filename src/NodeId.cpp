@@ -1,15 +1,15 @@
 #include "NodeId.hpp"
-#include "Node.hpp"
+#include "Scene.hpp"
 
 
 NodeId::NodeId(void) :
-    node_(nullptr)
+    valid_(std::make_shared<bool>(false))
 {}
 
-NodeId::NodeId(const std::shared_ptr<Iter>& node) :
-    node_(node)
+NodeId::NodeId(uint64_t id, uint32_t level, const std::shared_ptr<bool>& valid) :
+    id_(id), level_(level), valid_(valid)
 {}
-
+/*
 Node* NodeId::operator*(void) const {
     if (node_)
         return &*((*node_).it);
@@ -19,20 +19,19 @@ Node* NodeId::operator*(void) const {
 std::vector<Node>::iterator NodeId::operator->(void) const {
     return node_->it;
 }
+*/
+Node& NodeId::operator*(void) const {
+    if(*valid_)
+        return SCENE.nodes_[level_].nodes[id_];
+    else
+        throw "Invalid NodeId";
+}
 
 NodeId::operator bool() const {
-    //printf("%p ",node_.get());
-    return node_ && node_->valid;
+    return *valid_;
 }
 
-std::vector<Node>::iterator NodeId::iter(void) {
-    return node_->it;
-}
-
-std::vector<Node>::iterator NodeId::iter(void) const {
-    return node_->it;
-}
-
+/*
 Node* NodeId::ptr(void) {
     if (node_)
         return &*((*node_).it);
@@ -44,3 +43,4 @@ Node* NodeId::ptr(void) const {
         return &*((*node_).it);
     return nullptr;
 }
+*/

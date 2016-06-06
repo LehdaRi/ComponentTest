@@ -15,33 +15,39 @@ class Node {
 public:
     friend class Scene;
 
+    Node(uint64_t id, uint32_t level = 0u, const NodeId& parent = NodeId());
+
+    bool isValid(void) const;
     NodeId getId(void) const;
-    unsigned getSize(void) const;
+    //unsigned getSize(void) const;
+    unsigned getChildrenNumber(void) const;
 
     //  return iterator to next node of same level
-    std::vector<Node>::iterator getIterToNext(void) const;
+    //std::vector<Node>::iterator getIterToNext(void) const;
 
-    void print(std::vector<Node>::iterator& it, unsigned level);    //TEMP
+    void print(void);    //TEMP
 
     /*template <typename T_Component>
     void setFirstComponent(int first);
     template <typename T_Component>
     void addComponent(void);*/
 
-    unsigned id_;   //TEMP
-
 private:
-    static unsigned id__; //TEMP
-
-    std::shared_ptr<NodeId::Iter> it_;
+    uint64_t id_;
+    uint32_t level_;
+    std::shared_ptr<bool> valid_;
+    bool active_;
 
     NodeId parent_;
-    unsigned size_; //number of subnodes
-    void increaseSize(void);
-    void decreaseSize(unsigned n);
+    //unsigned size_; //number of subnodes
+    //void increaseSize(void);
+    //void decreaseSize(unsigned n);
 
-    //  private constructor only for Scene to use
-    Node(const NodeId& parent = NodeId());
+    std::vector<NodeId> children_;
+
+    //  invalidation frees the node id and invalidates children
+    void invalidate(void);
+
     //  adding children happens through Scene, therefore addChild is a private function
     void addChild(const NodeId& nodeId);
 

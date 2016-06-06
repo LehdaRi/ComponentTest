@@ -12,7 +12,7 @@ bool addNodes(std::default_random_engine& r, std::vector<NodeId>& nodes,
     for (auto i=0; i<n; ++i) {
         auto id = SCENE.addNode(parent);
         nodes.push_back(id);
-        if (nodes.size() >= 1000)
+        if (nodes.size() >= 30)
             return false;
         addNodes(r, nodes, id, min-1<=0 ? 0 : min-1, max-1);
     }
@@ -23,7 +23,7 @@ void buildRandomScene(std::default_random_engine& r, std::vector<NodeId>& nodes)
     for (auto i=0u; i<1000u; ++i) {
         auto id = SCENE.addNode();
         nodes.push_back(id);
-        if (!addNodes(r, nodes, id, 2, 6))
+        if (!addNodes(r, nodes, id, 2, 4))
             break;
     }
 }
@@ -34,7 +34,7 @@ void deleteRandomNodes(std::default_random_engine& r, std::vector<NodeId>& nodes
             if (r()%10 == 0) {
                 SCENE.deleteNode(*it);
                 it = nodes.erase(it);
-                if (SCENE.getNodesNumber() <= 500)
+                if (SCENE.getNodesNumber() <= 20)
                     return;
             }
             else
@@ -43,14 +43,19 @@ void deleteRandomNodes(std::default_random_engine& r, std::vector<NodeId>& nodes
     }
 }
 
-void
-
 int main(void) {
     std::default_random_engine r(715517);
     std::vector<NodeId> nodes;
+/*
+    auto id1 = SCENE.addNode();
+    auto id2 = SCENE.addNode(id1);
+    SCENE.deleteNode(id2);
+    SCENE.deleteNode(id1);*/
 
-    for (auto i=0u; i<1000; ++i) {
+
+    for (auto i=0u; i<1; ++i) {
         buildRandomScene(r, nodes);
+        SCENE.printNodes();
         deleteRandomNodes(r, nodes);
     }
 

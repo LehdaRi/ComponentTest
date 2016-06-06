@@ -11,6 +11,8 @@
 
 class Scene {
 public:
+    friend class NodeId;
+
     //  Scene is singleton class due to static component lists in accessComponents method
     static Scene& getInstance(void);
     Scene(const Scene&)             = delete;
@@ -18,7 +20,7 @@ public:
     Scene& operator=(const Scene&)  = delete;
     Scene& operator=(Scene&&)       = delete;
 
-    void reserveNodes(unsigned nReservedNodes);
+    //void reserveNodes(unsigned nReservedNodes);
 
     //  add top-level node
     NodeId addNode(void);
@@ -26,7 +28,7 @@ public:
     NodeId addNode(const NodeId& parent);
 
     void deleteNode(const NodeId& nodeId);
-    unsigned getNodesNumber(void) const;
+    uint64_t getNodesNumber(int32_t level = -1);
 
     void printNodes(void);  //TEMP
 
@@ -37,10 +39,20 @@ public:
     //void operator()(Visitor<T_Visitor, T_Component>& visitor);
 
 private:
-    Scene(void) {}
+    Scene(void);
 
-    std::vector<Node> nodes_;
-    void updateNodes(std::vector<Node>::iterator it);
+    struct NodeLevel {
+        std::vector<Node> nodes;
+        int64_t firstFreeId;
+
+        NodeLevel(void) : firstFreeId(-1) {}
+    };
+
+    inline static void updateFirstFreeId(NodeLevel& nodeLevel);
+
+    static std::unordered_map<uint32_t, NodeLevel> nodes_;
+    int64_t nTotalNodes;
+    //void updateNodes(std::vector<Node>::iterator it);
 
     //  access component vectors
     template <typename T_Component>
