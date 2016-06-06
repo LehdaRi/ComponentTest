@@ -43,11 +43,9 @@ void deleteRandomNodes(std::default_random_engine& r, std::vector<NodeId>& nodes
     }
 }
 
+void
+
 int main(void) {
-    //SceneTester st(715517, 100000, 50);
-
-    //st.test();
-
     std::default_random_engine r(715517);
     std::vector<NodeId> nodes;
 

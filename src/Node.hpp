@@ -17,37 +17,33 @@ public:
 
     NodeId getId(void) const;
     unsigned getSize(void) const;
-    //unsigned getChildrenNumber(void) const;
+
     //  return iterator to next node of same level
     std::vector<Node>::iterator getIterToNext(void) const;
 
-    void print(std::vector<Node>::iterator& it, unsigned level);
+    void print(std::vector<Node>::iterator& it, unsigned level);    //TEMP
 
     /*template <typename T_Component>
     void setFirstComponent(int first);
     template <typename T_Component>
     void addComponent(void);*/
 
+    unsigned id_;   //TEMP
 
-    unsigned id_;
-
-    std::shared_ptr<NodeId::Iter> it_;
 private:
     static unsigned id__; //TEMP
 
-    //  private constructor only for Scene to use
-    Node(const NodeId& parent = NodeId());
-    //  adding children happens through Scene, therefore addChild is a private function
-    void addChild(const NodeId& nodeId);
-
-    //std::shared_ptr<std::vector<Node>::iterator> it_;
+    std::shared_ptr<NodeId::Iter> it_;
 
     NodeId parent_;
     unsigned size_; //number of subnodes
     void increaseSize(void);
     void decreaseSize(unsigned n);
 
-    //std::vector<NodeId> children_;
+    //  private constructor only for Scene to use
+    Node(const NodeId& parent = NodeId());
+    //  adding children happens through Scene, therefore addChild is a private function
+    void addChild(const NodeId& nodeId);
 
     /*struct ComponentInfo {
         int first;     //  iterator to first component
