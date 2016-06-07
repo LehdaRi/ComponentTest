@@ -59,8 +59,12 @@ int main(void) {
 
     SCENE.printNodes();
 
-    SCENE.addComponent<TCA>(nodes[1], 4, 5);
+    auto& cr1 = SCENE.addComponent<TCA>(nodes[1], 4, 5);
+    auto& cr2 = (*nodes[1]).getComponent<TCA>();
 
+    printf("%p, %p\n", &cr1, &cr2);
+
+    auto& cr3 = SCENE.addComponent<TCA>(nodes[1], 4, 5);
 /*
     for (auto i=0u; i<100; ++i) {
         buildRandomScene(r, nodes);

@@ -6,7 +6,7 @@
 #include <deque>
 
 
-std::unordered_map<uint32_t, Scene::NodeLevel> Scene::nodes_;
+std::map<uint32_t, Scene::NodeLevel> Scene::nodes_;
 
 
 Scene& Scene::getInstance(void) {
@@ -133,4 +133,5 @@ void Scene::invalidateNode(Node& node) {
         deleteNode(c);
 
     node.children_.clear();
+    node.invalidateComponents();
 }

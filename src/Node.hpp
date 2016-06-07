@@ -8,7 +8,6 @@
 
 #include "NodeId.hpp"
 #include "ComponentBase.hpp"
-#include "TypeId.hpp"
 
 
 class Node {
@@ -23,10 +22,8 @@ public:
 
     void print(void);    //TEMP
 
-    /*template <typename T_Component>
-    void setFirstComponent(int first);
     template <typename T_Component>
-    void addComponent(void);*/
+    const T_Component& getComponent(void) const;
 
 private:
     uint64_t id_;
@@ -40,37 +37,45 @@ private:
     //  adding children happens through Scene, therefore addChild is a private function
     void addChild(const NodeId& nodeId);
 
-    /*struct ComponentInfo {
-        int first;     //  iterator to first component
-        unsigned n;         //  number of components in this node
-        unsigned nTotal;    //  number of components in this node and subnodes
-        ComponentInfo(void) : first(-1), n(0u), nTotal(0u) {}
+    struct ComponentInfo {
+        ComponentBase* component;
+        int64_t id;    //  location on the component vector, required for updating the pointer
+
+        ComponentInfo() : component(nullptr), id(-1) {}
     };
+
     //  Component infos stored with typeId
-    std::unordered_map<unsigned, ComponentInfo> componentInfos_;
-    //  for recursively increasing nTotal for parent nodes for specific component type
+    std::unordered_map<uint32_t, ComponentInfo> components_;
+
     template <typename T_Component>
-    void addComponentTotal(void);*/
+    void setComponent(ComponentBase* component, uint64_t id);
+
+    template <typename T_Component>
+    void updateComponentPointer(std::vector<T_Component>& cv);
+
+    void invalidateComponents(void);
 };
-/*
+
 template <typename T_Component>
-void Node::setFirstComponent(int first) {
-    componentInfos_[TypeId::getTypeId<T_Component>()].first = first;
+const T_Component& Node::getComponent(void) const {
+    //printf("component type id: %u\n", ComponentBase::getTypeId<T_Component>());
+    return *static_cast<T_Component*>(components_.at(ComponentBase::getTypeId<T_Component>()).component);
+}
+
+
+template <typename T_Component>
+void Node::setComponent(ComponentBase* component, uint64_t id) {
+    //printf("component type id: %u\n", ComponentBase::getTypeId<T_Component>());
+    auto& c = components_[ComponentBase::getTypeId<T_Component>()];
+    c.component = component;
+    c.id = id;
 }
 
 template <typename T_Component>
-void Node::addComponent(void) {
-    auto& ci = componentInfos_[TypeId::getTypeId<T_Component>()];
-    ++ci.n;
-    ++ci.nTotal;
-    parent_->addComponentTotal<T_Component>();
+void Node::updateComponentPointer(std::vector<T_Component>& cv) {
+    auto& c = components_[ComponentBase::getTypeId<T_Component>()];
+    c.component = &cv[c.id];
 }
 
-template <typename T_Component>
-void Node::addComponentTotal(void) {
-    ++componentInfos_[TypeId::getTypeId<T_Component>()].nTotal;
-    parent_->addComponentTotal<T_Component>();
-}
-*/
 
 #endif  //  NODE_HPP

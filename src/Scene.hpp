@@ -5,6 +5,8 @@
 #include "Node.hpp"
 #include "Visitor.hpp"
 
+#include <map>
+
 
 #define SCENE Scene::getInstance()
 
@@ -50,7 +52,7 @@ private:
 
     inline static void updateFirstFreeId(NodeLevel& nodeLevel);
 
-    static std::unordered_map<uint32_t, NodeLevel> nodes_;
+    static std::map<uint32_t, NodeLevel> nodes_;
     int64_t nTotalNodes;
 
     //  invalidation frees the node id and invalidates & deletes children
@@ -71,6 +73,9 @@ private:
 
     template <typename T_Component>
     inline static void updateFirstFreeId(ComponentLevel<T_Component>& nodeLevel);
+
+    template <typename T_Component>
+    void updateComponentPointers(void);
 };
 
 
@@ -79,13 +84,24 @@ T_Component& Scene::addComponent(const NodeId& node, Args&&... args) {
     auto& cl = accessComponents<T_Component>(node.level_);
 
     if (cl.firstFreeId == -1) {
+        auto cap1 = cl.components.capacity();
         cl.components.emplace_back(std::forward<Args>(args)...);
+        auto cap2 = cl.components.capacity();
+
+        (*node).setComponent<T_Component>(&cl.components.back(), cl.components.size()-1);
+
+        if (cap2 > cap1) {
+            printf("Component vector capacity increased to %llu, updating pointers...\n", cap2);
+            updateComponentPointers<T_Component>();
+        }
 
         return cl.components.back();
     }
     else {
         T_Component& c = cl.components[cl.firstFreeId];
         c = std::move(T_Component(std::forward<Args>(args)...));
+
+        (*node).setComponent<T_Component>(&c, cl.firstFreeId);
 
         updateFirstFreeId(cl);
         return c;
@@ -105,7 +121,7 @@ void Scene::operator()(Visitor<T_Visitor, T_Component>& visitor) {
 template <typename T_Component>
 Scene::ComponentLevel<T_Component>& Scene::accessComponents(uint32_t level) {
     //  similar to nodes_ data structure, components are also ordered by levels
-    static std::unordered_map<uint32_t, ComponentLevel<T_Component>> components;
+    static std::map<uint32_t, ComponentLevel<T_Component>> components;
     return components[level];
 }
 
@@ -122,6 +138,18 @@ void Scene::updateFirstFreeId(Scene::ComponentLevel<T_Component>& componentLevel
     }
 
     componentLevel.firstFreeId = -1;
+}
+
+template <typename T_Component>
+void Scene::updateComponentPointers(void) {
+    uint32_t l = 0;
+
+    for (auto& nl : nodes_) {
+        auto& cl = accessComponents<T_Component>(l++);
+
+        for (auto& n : nl.second.nodes)
+            n.updateComponentPointer(cl.components);
+    }
 }
 
 
