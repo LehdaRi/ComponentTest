@@ -39,14 +39,7 @@ private:
     bool active_;
 
     NodeId parent_;
-    //unsigned size_; //number of subnodes
-    //void increaseSize(void);
-    //void decreaseSize(unsigned n);
-
     std::vector<NodeId> children_;
-
-    //  invalidation frees the node id and invalidates & deletes children
-    void invalidate(void);
 
     //  adding children happens through Scene, therefore addChild is a private function
     void addChild(const NodeId& nodeId);

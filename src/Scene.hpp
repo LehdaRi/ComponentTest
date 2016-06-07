@@ -52,17 +52,19 @@ private:
 
     static std::unordered_map<uint32_t, NodeLevel> nodes_;
     int64_t nTotalNodes;
-    //void updateNodes(std::vector<Node>::iterator it);
+
+    //  invalidation frees the node id and invalidates & deletes children
+    void invalidateNode(Node& node);
 
     //  access component vectors
     template <typename T_Component>
-    std::vector<T_Component>& accessComponents(void);
+    std::vector<T_Component>& accessComponents(uint32_t level);
 };
 
 
 template <typename T_Component, typename... Args>
 T_Component& Scene::addComponent(const NodeId& node, Args&&... args) {
-    auto& v = accessComponents<T_Component>();
+    auto& v = accessComponents<T_Component>(node.level_);
 
 
 }
@@ -78,9 +80,10 @@ void Scene::operator()(Visitor<T_Visitor, T_Component>& visitor) {
 */
 
 template <typename T_Component>
-std::vector<T_Component>& Scene::accessComponents(void) {
-    static std::vector<T_Component> components;
-    return components;
+std::vector<T_Component>& Scene::accessComponents(uint32_t level) {
+    //  similar to nodes_ data structure, components are also ordered by levels
+    static std::unordered_map<uint32_t, std::vector<T_Component>> components;
+    return components[level];
 }
 
 

@@ -56,6 +56,7 @@ NodeId Scene::addNode(const NodeId& parent) {
         Node& node = nl.nodes[nl.firstFreeId];
         node.valid_.reset(new bool(true));
         node.active_ = true;
+        node.parent_ = parent;
 
         auto newNodeId = node.getId();
         (*parent).addChild(newNodeId);
@@ -75,7 +76,7 @@ void Scene::deleteNode(const NodeId& nodeId) {
     auto level = nodeId.level_;
     auto id = nodeId.id_;
 
-    (*nodeId).invalidate();
+    invalidateNode(*nodeId);
 
     if (nodes_[level].firstFreeId == -1 || nodes_[level].firstFreeId > id) {
         nodes_[level].firstFreeId = id;
@@ -91,7 +92,7 @@ uint64_t Scene::getNodesNumber(int32_t level) {
             for (auto& nl : nodes_) {
                 for (auto& n : nl.second.nodes)
                     if (n.isValid())
-                        nTotalNodes ++;
+                        nTotalNodes++;
             }
         }
         return nTotalNodes;
@@ -123,15 +124,13 @@ void Scene::updateFirstFreeId(NodeLevel& nodeLevel) {
     nodeLevel.firstFreeId = -1;
 }
 
-/*
-void Scene::updateNodes(std::vector<Node>::iterator it) {
-    //auto start = std::chrono::steady_clock::now();
+void Scene::invalidateNode(Node& node) {
+    printf("Node %u,%llu invalidated\n", node.level_, node.id_);
+    *node.valid_ = false;
+    node.active_ = false;
 
-    for (; it != nodes_.end(); ++it)
-        *(it->it_) = it;
+    for (auto& c : node.children_)
+        deleteNode(c);
 
-    //auto end = std::chrono::steady_clock::now();
-    //auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
-    //std::cout << "node update: " << diff.count() << " microseconds" << std::endl;
+    node.children_.clear();
 }
-*/
