@@ -18,14 +18,8 @@ public:
     NodeId(void);
     NodeId(uint64_t id, uint32_t level, const std::shared_ptr<bool>& valid);
 
-    //Node* operator*(void) const;
-    //std::vector<Node>::iterator operator->(void) const;
-
     Node& operator*(void) const;
     operator bool() const;
-
-    //Node* ptr(void);
-    //Node* ptr(void) const;
 
 private:
     uint64_t id_;

@@ -6,9 +6,10 @@ class ComponentBase {
 public:
     friend class Scene;
 
-    ~ComponentBase(void) {};
+    ComponentBase(void);
 
 private:
+    bool valid_;
     bool active_;
 };
 

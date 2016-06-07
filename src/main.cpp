@@ -3,6 +3,7 @@
 #include <random>
 
 #include "Scene.hpp"
+#include "TestComponents.hpp"
 
 
 bool addNodes(std::default_random_engine& r, std::vector<NodeId>& nodes,
@@ -46,13 +47,21 @@ void deleteRandomNodes(std::default_random_engine& r, std::vector<NodeId>& nodes
 int main(void) {
     std::default_random_engine r(715517);
     std::vector<NodeId> nodes;
+
+    nodes.push_back(SCENE.addNode());
+    nodes.push_back(SCENE.addNode(nodes[0]));
+    nodes.push_back(SCENE.addNode(nodes[0]));
+    nodes.push_back(SCENE.addNode(nodes[0]));
+    nodes.push_back(SCENE.addNode(nodes[2]));
+    nodes.push_back(SCENE.addNode());
+    nodes.push_back(SCENE.addNode());
+    nodes.push_back(SCENE.addNode(nodes[6]));
+
+    SCENE.printNodes();
+
+    SCENE.addComponent<TCA>(nodes[1], 4, 5);
+
 /*
-    auto id1 = SCENE.addNode();
-    auto id2 = SCENE.addNode(id1);
-    SCENE.deleteNode(id2);
-    SCENE.deleteNode(id1);*/
-
-
     for (auto i=0u; i<100; ++i) {
         buildRandomScene(r, nodes);
         //SCENE.printNodes();
@@ -66,9 +75,10 @@ int main(void) {
     buildRandomScene(r, nodes);
     SCENE.printNodes();
     printf("Number of nodes: %llu\n", SCENE.getNodesNumber());
+*/
 
-
-    /*TVA visitor;
+/*
+    TVA visitor;
 
     auto start = std::chrono::steady_clock::now();
     buildRandomScene(scene, r);
@@ -89,7 +99,8 @@ int main(void) {
     }
     avg /= 100.0f;
 
-    printf("static average: %0.3f microseconds\n", avg);*/
+    printf("static average: %0.3f microseconds\n", avg);
+*/
 
     return 0;
 }

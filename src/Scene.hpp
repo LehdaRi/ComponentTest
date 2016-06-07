@@ -56,17 +56,40 @@ private:
     //  invalidation frees the node id and invalidates & deletes children
     void invalidateNode(Node& node);
 
-    //  access component vectors
+
+    template<typename T_Component>
+    struct ComponentLevel {
+        std::vector<T_Component> components;
+        int64_t firstFreeId;
+
+        ComponentLevel(void) : firstFreeId(-1) {}
+    };
+
+    //  access component data structures
     template <typename T_Component>
-    std::vector<T_Component>& accessComponents(uint32_t level);
+    ComponentLevel<T_Component>& accessComponents(uint32_t level);
+
+    template <typename T_Component>
+    inline static void updateFirstFreeId(ComponentLevel<T_Component>& nodeLevel);
 };
 
 
 template <typename T_Component, typename... Args>
 T_Component& Scene::addComponent(const NodeId& node, Args&&... args) {
-    auto& v = accessComponents<T_Component>(node.level_);
+    auto& cl = accessComponents<T_Component>(node.level_);
 
+    if (cl.firstFreeId == -1) {
+        cl.components.emplace_back(std::forward<Args>(args)...);
 
+        return cl.components.back();
+    }
+    else {
+        T_Component& c = cl.components[cl.firstFreeId];
+        c = std::move(T_Component(std::forward<Args>(args)...));
+
+        updateFirstFreeId(cl);
+        return c;
+    }
 }
 
 /*
@@ -80,10 +103,25 @@ void Scene::operator()(Visitor<T_Visitor, T_Component>& visitor) {
 */
 
 template <typename T_Component>
-std::vector<T_Component>& Scene::accessComponents(uint32_t level) {
+Scene::ComponentLevel<T_Component>& Scene::accessComponents(uint32_t level) {
     //  similar to nodes_ data structure, components are also ordered by levels
-    static std::unordered_map<uint32_t, std::vector<T_Component>> components;
+    static std::unordered_map<uint32_t, ComponentLevel<T_Component>> components;
     return components[level];
+}
+
+template <typename T_Component>
+void Scene::updateFirstFreeId(Scene::ComponentLevel<T_Component>& componentLevel) {
+    if (componentLevel.firstFreeId == -1)
+        componentLevel.firstFreeId = 0;
+
+    for (auto i=componentLevel.firstFreeId; i<(int64_t)componentLevel.components.size(); ++i) {
+        if (!componentLevel.components[i].valid_) {
+            componentLevel.firstFreeId = i;
+            return;
+        }
+    }
+
+    componentLevel.firstFreeId = -1;
 }
 
 

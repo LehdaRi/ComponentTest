@@ -78,7 +78,7 @@ void Scene::deleteNode(const NodeId& nodeId) {
 
     invalidateNode(*nodeId);
 
-    if (nodes_[level].firstFreeId == -1 || nodes_[level].firstFreeId > id) {
+    if (nodes_[level].firstFreeId == -1 || nodes_[level].firstFreeId > (int64_t)id) {
         nodes_[level].firstFreeId = id;
         printf("Level %u first free id: %llu\n", level, id);
     }

@@ -19,11 +19,7 @@ public:
 
     bool isValid(void) const;
     NodeId getId(void) const;
-    //unsigned getSize(void) const;
     unsigned getChildrenNumber(void) const;
-
-    //  return iterator to next node of same level
-    //std::vector<Node>::iterator getIterToNext(void) const;
 
     void print(void);    //TEMP
 
