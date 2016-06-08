@@ -37,8 +37,8 @@ public:
     template <typename T_Component, typename... Args>
     T_Component& addComponent(const NodeId& node, Args&&... args);
 
-    //template <typename T_Visitor, typename T_Component>
-    //void operator()(Visitor<T_Visitor, T_Component>& visitor);
+    template <typename T_Visitor, typename T_Component>
+    void operator()(Visitor<T_Visitor, T_Component>& visitor);
 
 private:
     Scene(void);
@@ -58,21 +58,12 @@ private:
     //  invalidation frees the node id and invalidates & deletes children
     void invalidateNode(Node& node);
 
-/*
-    template<typename T_Component>
-    struct ComponentLevel {
-        std::vector<T_Component> components;
-        int64_t firstFreeId;
-
-        ComponentLevel(void) : firstFreeId(-1) {}
-    };
-*/
-
-
 
     //  access component data structures
     template <typename T_Component>
-    std::vector<T_Component>& accessComponents(uint32_t level);
+    std::map<uint32_t, std::vector<T_Component>>& accessComponents(void);
+    template <typename T_Component>
+    inline std::vector<T_Component>& accessComponents(uint32_t level);
 
     //  first free ids using type id system. unordered_map for type ids, map for levels
     std::unordered_map<uint32_t, std::map<uint32_t, int64_t>> componentFirstFreeIds_;
@@ -96,7 +87,7 @@ T_Component& Scene::addComponent(const NodeId& node, Args&&... args) {
 
     auto& ffId = ffIdLevel[node.level_];
 
-    if (ffId == -1) {
+    if (ffId == -1) {   //  no invalidated node slots available
         auto cap1 = cv.capacity();
         cv.emplace_back(std::forward<Args>(args)...);
         auto cap2 = cv.capacity();
@@ -130,11 +121,26 @@ T_Component& Scene::addComponent(const NodeId& node, Args&&... args) {
     }
 }
 
+template <typename T_Visitor, typename T_Component>
+void Scene::operator()(Visitor<T_Visitor, T_Component>& visitor) {
+    auto& components = accessComponents<T_Component>();
+
+    for (auto& cv : components)
+        for (auto& c : cv.second)
+            if (c.valid_ && c.active_)
+                visitor(c);
+}
+
 template <typename T_Component>
-std::vector<T_Component>& Scene::accessComponents(uint32_t level) {
+std::map<uint32_t, std::vector<T_Component>>& Scene::accessComponents(void) {
     //  similar to nodes_ data structure, components are also ordered by levels
     static std::map<uint32_t, std::vector<T_Component>> components;
-    return components[level];
+    return components;
+}
+
+template <typename T_Component>
+inline std::vector<T_Component>& Scene::accessComponents(uint32_t level) {
+    return accessComponents<T_Component>()[level];
 }
 
 template <typename T_Component>
@@ -149,16 +155,6 @@ void Scene::updateComponentPointers(void) {
                 n.updateComponentPointer(cv);
     }
 }
-
-/*
-template <typename T_Visitor, typename T_Component>
-void Scene::operator()(Visitor<T_Visitor, T_Component>& visitor) {
-    auto& v = accessComponents<T_Component>();
-
-    for (auto& c : v)
-        visitor(c);
-}
-*/
 
 
 #endif  //  SCENE_HPP

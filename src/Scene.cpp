@@ -126,7 +126,6 @@ void Scene::updateFirstFreeId(NodeLevel& nodeLevel) {
 
 void Scene::invalidateNode(Node& node) {
     //  invalidate components of node
-    printf("Node %u,%llu components_ size: %u\n", node.level_, node.id_, node.components_.size());
     for (auto& c : node.components_) {
         printf("Component %i on level %u invalidated\n", c.second.id, node.level_);
         auto& ffId = componentFirstFreeIds_[c.first][node.level_];

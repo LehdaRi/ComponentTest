@@ -8,8 +8,9 @@
 class TVA : public Visitor<TVA, TCA> {
 public:
     void operator()(TCA& component) {
-        ++component.a_;
-        --component.b_;
+        printf("%i, %i\n", component.a_, component.b_);
+        //++component.a_;
+        //--component.b_;
     }
 };
 
@@ -17,8 +18,9 @@ public:
 class TVB : public Visitor<TVB, TCB> {
 public:
     void operator()(TCB& component) {
-        component.a_ *= 1.01f;
-        component.b_ /= 1.02;
+        printf("%0.2f, %0.2f\n", component.a_, component.b_);
+        //component.a_ *= 1.01f;
+        //component.b_ /= 1.02;
     }
 };
 
