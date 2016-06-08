@@ -80,7 +80,7 @@ void Scene::deleteNode(const NodeId& nodeId) {
 
     if (nodes_[level].firstFreeId == -1 || nodes_[level].firstFreeId > (int64_t)id) {
         nodes_[level].firstFreeId = id;
-        printf("Level %u first free id: %llu\n", level, id);
+        printf("Level %u first free node id: %llu\n", level, id);
     }
 
 }
@@ -125,13 +125,33 @@ void Scene::updateFirstFreeId(NodeLevel& nodeLevel) {
 }
 
 void Scene::invalidateNode(Node& node) {
-    printf("Node %u,%llu invalidated\n", node.level_, node.id_);
-    *node.valid_ = false;
-    node.active_ = false;
+    //  invalidate components of node
+    printf("Node %u,%llu components_ size: %u\n", node.level_, node.id_, node.components_.size());
+    for (auto& c : node.components_) {
+        printf("Component %i on level %u invalidated\n", c.second.id, node.level_);
+        auto& ffId = componentFirstFreeIds_[c.first][node.level_];
 
+        c.second.component->invalidate();
+        //  update first free id
+        if (ffId == -1 || c.second.id < ffId) {
+            ffId = c.second.id;
+            printf("Level %u first free component id: %i\n", node.level_, ffId);
+        }
+
+        c.second.component = nullptr;
+        c.second.id = -1;
+    }
+    node.components_.clear();
+
+    //  delete children
     for (auto& c : node.children_)
         deleteNode(c);
 
     node.children_.clear();
-    node.invalidateComponents();
+
+    //  invalidate
+    *node.valid_ = false;
+    node.active_ = false;
+
+    printf("Node %u,%llu invalidated\n", node.level_, node.id_);
 }

@@ -23,6 +23,8 @@ public:
     void print(void);    //TEMP
 
     template <typename T_Component>
+    bool hasComponent(void) const;
+    template <typename T_Component>
     const T_Component& getComponent(void) const;
 
 private:
@@ -56,12 +58,18 @@ private:
     void invalidateComponents(void);
 };
 
+
+template <typename T_Component>
+bool Node::hasComponent(void) const {
+    //printf("component type id: %u\n", ComponentBase::getTypeId<T_Component>());
+    return components_.find(ComponentBase::getTypeId<T_Component>()) != components_.end();
+}
+
 template <typename T_Component>
 const T_Component& Node::getComponent(void) const {
     //printf("component type id: %u\n", ComponentBase::getTypeId<T_Component>());
     return *static_cast<T_Component*>(components_.at(ComponentBase::getTypeId<T_Component>()).component);
 }
-
 
 template <typename T_Component>
 void Node::setComponent(ComponentBase* component, uint64_t id) {

@@ -6,6 +6,13 @@
 #include "TestComponents.hpp"
 
 
+void addComponents(std::default_random_engine& r, NodeId& node) {
+    if (r()%3 == 0)
+        SCENE.addComponent<TCA>(node, r()%100, r()%100);
+    if (r()%3 == 0)
+        SCENE.addComponent<TCB>(node, (r()%1000)/100.0f, (r()%10000)/100.0);
+}
+
 bool addNodes(std::default_random_engine& r, std::vector<NodeId>& nodes,
               const NodeId& parent, int min, int max) {
     int n = min + r()%(max-min+1);
@@ -13,8 +20,12 @@ bool addNodes(std::default_random_engine& r, std::vector<NodeId>& nodes,
     for (auto i=0; i<n; ++i) {
         auto id = SCENE.addNode(parent);
         nodes.push_back(id);
-        if (SCENE.getNodesNumber() >= 100)
+
+        addComponents(r, id);
+
+        if (SCENE.getNodesNumber() >= 1000)
             return false;
+
         addNodes(r, nodes, id, min-1<=0 ? 0 : min-1, max-1);
     }
     return true;
@@ -23,8 +34,12 @@ bool addNodes(std::default_random_engine& r, std::vector<NodeId>& nodes,
 void buildRandomScene(std::default_random_engine& r, std::vector<NodeId>& nodes) {
     for (auto i=0u; i<1000u; ++i) {
         auto id = SCENE.addNode();
+
+        addComponents(r, id);
+
         nodes.push_back(id);
-        if (!addNodes(r, nodes, id, 2, 4))
+
+        if (!addNodes(r, nodes, id, 2, 8))
             break;
     }
 }
@@ -35,7 +50,7 @@ void deleteRandomNodes(std::default_random_engine& r, std::vector<NodeId>& nodes
             if (r()%10 == 0) {
                 SCENE.deleteNode(*it);
                 it = nodes.erase(it);
-                if (SCENE.getNodesNumber() <= 50)
+                if (SCENE.getNodesNumber() <= 500)
                     return;
             }
             else
@@ -47,7 +62,7 @@ void deleteRandomNodes(std::default_random_engine& r, std::vector<NodeId>& nodes
 int main(void) {
     std::default_random_engine r(715517);
     std::vector<NodeId> nodes;
-
+/*
     nodes.push_back(SCENE.addNode());
     nodes.push_back(SCENE.addNode(nodes[0]));
     nodes.push_back(SCENE.addNode(nodes[0]));
@@ -59,14 +74,23 @@ int main(void) {
 
     SCENE.printNodes();
 
-    auto& cr1 = SCENE.addComponent<TCA>(nodes[1], 4, 5);
-    auto& cr2 = (*nodes[1]).getComponent<TCA>();
+    SCENE.addComponent<TCA>(nodes[1], 4, 5);
+    SCENE.addComponent<TCA>(nodes[2], 6, 7);
+    SCENE.addComponent<TCA>(nodes[4], 1, 2);
+    SCENE.addComponent<TCA>(nodes[7], 8, 6);
+    SCENE.addComponent<TCB>(nodes[0], 4, 5);
+    SCENE.addComponent<TCB>(nodes[2], 6, 7);
+    SCENE.addComponent<TCB>(nodes[4], 1, 2);
+    SCENE.addComponent<TCB>(nodes[5], 8, 6);
 
-    printf("%p, %p\n", &cr1, &cr2);
+    SCENE.deleteNode(nodes[2]);
 
-    auto& cr3 = SCENE.addComponent<TCA>(nodes[1], 4, 5);
-/*
-    for (auto i=0u; i<100; ++i) {
+    auto& cr5 = SCENE.addComponent<TCA>(nodes[3], 8, 12);
+    auto& cr6 = SCENE.addComponent<TCB>(nodes[7], 45, 1);
+*/
+
+
+    for (auto i=0u; i<1; ++i) {
         buildRandomScene(r, nodes);
         //SCENE.printNodes();
         //printf("Number of nodes: %llu\n", SCENE.getNodesNumber());
@@ -79,7 +103,7 @@ int main(void) {
     buildRandomScene(r, nodes);
     SCENE.printNodes();
     printf("Number of nodes: %llu\n", SCENE.getNodesNumber());
-*/
+
 
 /*
     TVA visitor;

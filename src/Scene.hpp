@@ -58,7 +58,7 @@ private:
     //  invalidation frees the node id and invalidates & deletes children
     void invalidateNode(Node& node);
 
-
+/*
     template<typename T_Component>
     struct ComponentLevel {
         std::vector<T_Component> components;
@@ -66,13 +66,16 @@ private:
 
         ComponentLevel(void) : firstFreeId(-1) {}
     };
+*/
+
+
 
     //  access component data structures
     template <typename T_Component>
-    ComponentLevel<T_Component>& accessComponents(uint32_t level);
+    std::vector<T_Component>& accessComponents(uint32_t level);
 
-    template <typename T_Component>
-    inline static void updateFirstFreeId(ComponentLevel<T_Component>& nodeLevel);
+    //  first free ids using type id system. unordered_map for type ids, map for levels
+    std::unordered_map<uint32_t, std::map<uint32_t, int64_t>> componentFirstFreeIds_;
 
     template <typename T_Component>
     void updateComponentPointers(void);
@@ -81,30 +84,69 @@ private:
 
 template <typename T_Component, typename... Args>
 T_Component& Scene::addComponent(const NodeId& node, Args&&... args) {
-    auto& cl = accessComponents<T_Component>(node.level_);
+    auto& cv = accessComponents<T_Component>(node.level_);
 
-    if (cl.firstFreeId == -1) {
-        auto cap1 = cl.components.capacity();
-        cl.components.emplace_back(std::forward<Args>(args)...);
-        auto cap2 = cl.components.capacity();
+    //  type Id
+    auto typeId = ComponentBase::getTypeId<T_Component>();
+    //  level map of first free ids
+    auto& ffIdLevel = componentFirstFreeIds_[typeId];
+    //  if specified level has no components, initialize first free id to -1
+    if (ffIdLevel.find(node.level_) == ffIdLevel.end())
+        ffIdLevel[node.level_] = -1;
 
-        (*node).setComponent<T_Component>(&cl.components.back(), cl.components.size()-1);
+    auto& ffId = ffIdLevel[node.level_];
+
+    if (ffId == -1) {
+        auto cap1 = cv.capacity();
+        cv.emplace_back(std::forward<Args>(args)...);
+        auto cap2 = cv.capacity();
+
+        (*node).setComponent<T_Component>(&cv.back(), cv.size()-1);
 
         if (cap2 > cap1) {
-            printf("Component vector capacity increased to %llu, updating pointers...\n", cap2);
+            printf("Component vector capacity on level %u increased to %llu, updating pointers...\n", node.level_, cap2);
             updateComponentPointers<T_Component>();
         }
 
-        return cl.components.back();
+        return cv.back();
     }
     else {
-        T_Component& c = cl.components[cl.firstFreeId];
+        printf("Component %i on level %u revalidated\n", ffId, node.level_);
+        T_Component& c = cv[ffId];
         c = std::move(T_Component(std::forward<Args>(args)...));
 
-        (*node).setComponent<T_Component>(&c, cl.firstFreeId);
+        (*node).setComponent<T_Component>(&c, ffId);
 
-        updateFirstFreeId(cl);
+        //  find next free id
+        ffId = -1;
+        for (auto i=ffId+1; i<(int64_t)cv.size(); ++i) {
+            if (!cv[i].valid_) {
+                ffId = i;
+                break;
+            }
+        }
+
         return c;
+    }
+}
+
+template <typename T_Component>
+std::vector<T_Component>& Scene::accessComponents(uint32_t level) {
+    //  similar to nodes_ data structure, components are also ordered by levels
+    static std::map<uint32_t, std::vector<T_Component>> components;
+    return components[level];
+}
+
+template <typename T_Component>
+void Scene::updateComponentPointers(void) {
+    uint32_t l = 0;
+
+    for (auto& nl : nodes_) {
+        auto& cv = accessComponents<T_Component>(l++);
+
+        for (auto& n : nl.second.nodes)
+            if (n.hasComponent<T_Component>())
+                n.updateComponentPointer(cv);
     }
 }
 
@@ -117,40 +159,6 @@ void Scene::operator()(Visitor<T_Visitor, T_Component>& visitor) {
         visitor(c);
 }
 */
-
-template <typename T_Component>
-Scene::ComponentLevel<T_Component>& Scene::accessComponents(uint32_t level) {
-    //  similar to nodes_ data structure, components are also ordered by levels
-    static std::map<uint32_t, ComponentLevel<T_Component>> components;
-    return components[level];
-}
-
-template <typename T_Component>
-void Scene::updateFirstFreeId(Scene::ComponentLevel<T_Component>& componentLevel) {
-    if (componentLevel.firstFreeId == -1)
-        componentLevel.firstFreeId = 0;
-
-    for (auto i=componentLevel.firstFreeId; i<(int64_t)componentLevel.components.size(); ++i) {
-        if (!componentLevel.components[i].valid_) {
-            componentLevel.firstFreeId = i;
-            return;
-        }
-    }
-
-    componentLevel.firstFreeId = -1;
-}
-
-template <typename T_Component>
-void Scene::updateComponentPointers(void) {
-    uint32_t l = 0;
-
-    for (auto& nl : nodes_) {
-        auto& cl = accessComponents<T_Component>(l++);
-
-        for (auto& n : nl.second.nodes)
-            n.updateComponentPointer(cl.components);
-    }
-}
 
 
 #endif  //  SCENE_HPP
