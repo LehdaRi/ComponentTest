@@ -61,19 +61,16 @@ private:
 
 template <typename T_Component>
 bool Node::hasComponent(void) const {
-    //printf("component type id: %u\n", ComponentBase::getTypeId<T_Component>());
     return components_.find(ComponentBase::getTypeId<T_Component>()) != components_.end();
 }
 
 template <typename T_Component>
 const T_Component& Node::getComponent(void) const {
-    //printf("component type id: %u\n", ComponentBase::getTypeId<T_Component>());
     return *static_cast<T_Component*>(components_.at(ComponentBase::getTypeId<T_Component>()).component);
 }
 
 template <typename T_Component>
 void Node::setComponent(ComponentBase* component, uint64_t id) {
-    //printf("component type id: %u\n", ComponentBase::getTypeId<T_Component>());
     auto& c = components_[ComponentBase::getTypeId<T_Component>()];
     c.component = component;
     c.id = id;

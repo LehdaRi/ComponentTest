@@ -94,15 +94,14 @@ T_Component& Scene::addComponent(const NodeId& node, Args&&... args) {
 
         (*node).setComponent<T_Component>(&cv.back(), cv.size()-1);
 
-        if (cap2 > cap1) {
-            printf("Component vector capacity on level %u increased to %llu, updating pointers...\n", node.level_, cap2);
+        //  if capacity is increased(vector potentially moved in memory),
+        //  component pointers stored in nodes need to be updated
+        if (cap2 > cap1)
             updateComponentPointers<T_Component>();
-        }
 
         return cv.back();
     }
     else {
-        printf("Component %i on level %u revalidated\n", ffId, node.level_);
         T_Component& c = cv[ffId];
         c = std::move(T_Component(std::forward<Args>(args)...));
 

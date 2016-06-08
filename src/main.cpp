@@ -64,18 +64,13 @@ int main(void) {
     std::default_random_engine r(715517);
     std::vector<NodeId> nodes;
 
-
-    for (auto i=0u; i<1; ++i) {
+    //  some stress
+    for (auto i=0u; i<10; ++i) {
         buildRandomScene(r, nodes);
-        //SCENE.printNodes();
-        //printf("Number of nodes: %llu\n", SCENE.getNodesNumber());
         deleteRandomNodes(r, nodes);
     }
-
-    SCENE.printNodes();
-    printf("Number of nodes: %llu\n", SCENE.getNodesNumber());
-
     buildRandomScene(r, nodes);
+
     SCENE.printNodes();
     printf("Number of nodes: %llu\n", SCENE.getNodesNumber());
 
@@ -84,30 +79,6 @@ int main(void) {
 
     SCENE(visitor1);
     SCENE(visitor2);
-/*
-    TVA visitor;
-
-    auto start = std::chrono::steady_clock::now();
-    buildRandomScene(scene, r);
-    auto end = std::chrono::steady_clock::now();
-    auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
-    std::cout << "scene build: " << diff.count() << " microseconds" << std::endl;
-
-    float avg = 0.0f;
-    for (auto i=0; i<100; ++i) {
-        auto start = std::chrono::steady_clock::now();
-
-        scene(visitor);
-
-        auto end = std::chrono::steady_clock::now();
-        auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
-        //std::cout << "component list: " << diff.count() << " microseconds" << std::endl;
-        avg += diff.count();
-    }
-    avg /= 100.0f;
-
-    printf("static average: %0.3f microseconds\n", avg);
-*/
 
     return 0;
 }

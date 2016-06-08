@@ -38,8 +38,6 @@ NodeId Scene::addNode(void) {
 }
 
 NodeId Scene::addNode(const NodeId& parent) {
-    printf("Adding child node for node %u,%llu\n", parent.level_, parent.id_);
-
     nTotalNodes = -1;
     auto& nl = nodes_[parent.level_+1];
 
@@ -52,7 +50,6 @@ NodeId Scene::addNode(const NodeId& parent) {
         return newNodeId;
     }
     else {
-        printf("Node %u,%llu revalidated\n", parent.level_+1, nl.firstFreeId);
         Node& node = nl.nodes[nl.firstFreeId];
         node.valid_.reset(new bool(true));
         node.active_ = true;
@@ -78,11 +75,8 @@ void Scene::deleteNode(const NodeId& nodeId) {
 
     invalidateNode(*nodeId);
 
-    if (nodes_[level].firstFreeId == -1 || nodes_[level].firstFreeId > (int64_t)id) {
+    if (nodes_[level].firstFreeId == -1 || nodes_[level].firstFreeId > (int64_t)id)
         nodes_[level].firstFreeId = id;
-        printf("Level %u first free node id: %llu\n", level, id);
-    }
-
 }
 
 uint64_t Scene::getNodesNumber(int32_t level) {
@@ -127,15 +121,12 @@ void Scene::updateFirstFreeId(NodeLevel& nodeLevel) {
 void Scene::invalidateNode(Node& node) {
     //  invalidate components of node
     for (auto& c : node.components_) {
-        printf("Component %i on level %u invalidated\n", c.second.id, node.level_);
         auto& ffId = componentFirstFreeIds_[c.first][node.level_];
 
         c.second.component->invalidate();
         //  update first free id
-        if (ffId == -1 || c.second.id < ffId) {
+        if (ffId == -1 || c.second.id < ffId)
             ffId = c.second.id;
-            printf("Level %u first free component id: %i\n", node.level_, ffId);
-        }
 
         c.second.component = nullptr;
         c.second.id = -1;
@@ -151,6 +142,4 @@ void Scene::invalidateNode(Node& node) {
     //  invalidate
     *node.valid_ = false;
     node.active_ = false;
-
-    printf("Node %u,%llu invalidated\n", node.level_, node.id_);
 }

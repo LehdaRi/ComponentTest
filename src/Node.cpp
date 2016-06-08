@@ -7,9 +7,7 @@ Node::Node(uint64_t id, uint32_t level, const NodeId& parent) :
     valid_(std::make_shared<bool>(true)),
     active_(true),
     parent_(parent)
-{
-     printf("Node %u,%llu created\n", level_, id_);
-}
+{}
 
 bool Node::isValid(void) const {
     return *valid_;
